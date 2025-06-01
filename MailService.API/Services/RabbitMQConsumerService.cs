@@ -14,7 +14,13 @@ public class RabbitMQConsumerService : BackgroundService
         var factory = new ConnectionFactory() { HostName = "localhost", Port = 5672 };
         _connection = factory.CreateConnection();
         _channel = _connection.CreateModel();
-        _channel.QueueDeclare(queue: nameof(PasswordResetEvent), durable: false, exclusive: false, autoDelete: false);
+
+        _channel.QueueDeclare(
+            queue: nameof(UserCreatedEvent),
+            durable: false,
+            exclusive: false,
+            autoDelete: false
+        );
     }
 
     protected override Task ExecuteAsync(CancellationToken stoppingToken)
@@ -23,19 +29,26 @@ public class RabbitMQConsumerService : BackgroundService
         consumer.Received += async (model, ea) =>
         {
             var body = ea.Body.ToArray();
-            var messageJson = Encoding.UTF8.GetString(body);
-            var mailEvent = JsonSerializer.Deserialize<PasswordResetEvent>(messageJson);
+            var json = Encoding.UTF8.GetString(body);
+            var userCreated = JsonSerializer.Deserialize<UserCreatedEvent>(json);
 
-            await SendMailAsync(mailEvent);
+            await SendWelcomeMailAsync(userCreated);
         };
 
-        _channel.BasicConsume(queue: nameof(PasswordResetEvent), autoAck: true, consumer: consumer);
+        _channel.BasicConsume(
+            queue: nameof(UserCreatedEvent),
+            autoAck: true,
+            consumer: consumer
+        );
+
         return Task.CompletedTask;
     }
-    private Task SendMailAsync(PasswordResetEvent mail)
+
+    private Task SendWelcomeMailAsync(UserCreatedEvent mail)
     {
-        Console.WriteLine($"📧 Mail Gönderiliyor: {mail.To} -> {mail.Subject}");
-      
+        Console.WriteLine($"📧 Hoş Geldin Maili Gönderildi: {mail.Email}");
+        Console.WriteLine($"Konu: Hoş Geldiniz, {mail.UserName}!");
+        Console.WriteLine("İçerik: Hesabınızı başarıyla oluşturdunuz.");
         return Task.CompletedTask;
     }
 }
