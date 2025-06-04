@@ -1,5 +1,6 @@
 ﻿using MailService.API.Models;
 using MailService.API.Services;
+using MailService.API.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,9 +10,9 @@ namespace MailService.API.Controllers
     [Route("api/mail")]
     public class MailController : ControllerBase
     {
-        private readonly SmtpMailService _mailService;
+        private readonly ISmtpMailService _mailService;
 
-        public MailController(SmtpMailService mailService)
+        public MailController(ISmtpMailService mailService)
         {
             _mailService = mailService;
         }

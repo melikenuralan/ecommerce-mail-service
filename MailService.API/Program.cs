@@ -1,4 +1,9 @@
+using MailService.API.Consumers;
+using MailService.API.Extensions;
 using MailService.API.Services;
+using MailService.API.Services.Interfaces;
+using MassTransit;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,8 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<SmtpMailService>();
-builder.Services.AddHostedService<RabbitMQConsumerService>();
+builder.Services.AddApplicationServices(builder.Configuration);
 
 builder.Host.ConfigureLogging(logging =>
 {
